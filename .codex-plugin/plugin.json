@@ -1,0 +1,19 @@
+{
+  "name": "skill-soup",
+  "version": "0.3.1",
+  "description": "Agent skills for Claude Code and Codex: explainers, reviews, workflows",
+  "author": {
+    "name": "Roman Stranghöner"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Skill Soup",
+    "shortDescription": "Explainers, reviews, workflows",
+    "developerName": "Roman Stranghöner",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ]
+  }
+}

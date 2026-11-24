@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: Cache unchanged saves</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.1.0/dist/basecoat-nova.cdn.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/700.css">
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const setTheme = () => document.documentElement.classList.toggle('dark', dark.matches);
+  setTheme(); dark.addEventListener('change', setTheme);
+</script>
+<style>
+  /* Primary stays black (white in dark mode). Accents: copper and forest. */
+  :root { --copper: #a65f2d; --copper-soft: oklch(0.96 0.02 65); --forest: #2a3b2a; --forest-soft: oklch(0.96 0.02 145); }
+  html.dark { --copper: #c47a3f; --copper-soft: oklch(0.25 0.05 55 / 0.3); --forest: #98b3a1; --forest-soft: oklch(0.25 0.04 145 / 0.3); }
+  body { font-size: 16px; line-height: 1.6; background: var(--background); color: var(--foreground); }
+  main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1rem 5rem; }
+  main > section { margin-top: 3.5rem; scroll-margin-top: 1rem; }
+  h1 { font-size: 2rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; margin: .75rem 0; }
+  h2 { font-size: 1.375rem; font-weight: 600; letter-spacing: -0.01em; margin-bottom: .75rem; }
+  h3 { font-size: 1.0625rem; font-weight: 600; }
+  main > section > h2 ~ * + * { margin-top: 1rem; }
+  .lead { color: var(--muted-foreground); }
+  .btn { min-height: 44px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+  .stack { display: grid; gap: 1rem; }
+  .muted { color: var(--muted-foreground); }
+  main a:not(.btn) { text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px; }
+  .badge.brand { background: var(--forest-soft); color: var(--forest); }
+  .card, .alert, .alert > section { font-size: 1rem; }
+  code { font: 0.9375em var(--font-mono); }
+  main ul, main ol { list-style: revert; padding-left: 1.25rem; }
+  .table th, .table td { white-space: normal; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .icon { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  details.deep { border: 1px solid var(--border); border-radius: var(--radius); padding: .75rem 1rem; margin-bottom: 1rem; }
+  details.deep summary { cursor: pointer; font-weight: 600; min-height: 28px; }
+  details.deep[open] summary { margin-bottom: .5rem; }
+
+  /* Box diagram: boxes and arrows in HTML, always with example data. */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+  .flow .box { border: 1px solid var(--border); border-radius: var(--radius); padding: .5rem .75rem; background: var(--card); }
+  .flow .box small { display: block; color: var(--muted-foreground); font-size: .875rem; }
+  .flow .box.new { border-color: var(--copper); background: var(--copper-soft); }
+  .flow .arrow { display: inline-flex; color: var(--muted-foreground); }
+  .compare { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); }
+  .compare h3 { font-size: .875rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-foreground); margin-bottom: .5rem; }
+
+  pre { white-space: pre-wrap; margin: 0; padding: 1rem; border-radius: var(--radius); background: var(--muted);
+    font: 0.9375rem/1.55 var(--font-mono); }
+  pre .add { color: var(--forest); background: var(--forest-soft); display: inline-block; width: 100%; }
+  pre .del { color: var(--destructive); text-decoration: line-through; display: inline-block; width: 100%; }
+
+  .alert.concept { border-left: 3px solid var(--copper); }
+
+  table.leans { width: 100%; }
+  table.leans td, table.leans th { vertical-align: top; }
+
+  /* Severity: blocker red octagon-x, should fix copper triangle-alert, nit neutral pencil, question forest circle-help, pre-existing neutral rotate-ccw. */
+  [data-severity="blocker"] { --sev: var(--destructive); }
+  [data-severity="should-fix"] { --sev: var(--copper); }
+  [data-severity="nit"] { --sev: var(--muted-foreground); }
+  [data-severity="question"] { --sev: var(--forest); }
+  [data-severity="pre-existing"] { --sev: var(--muted-foreground); }
+  .card[data-severity] { border-left: 4px solid var(--sev); }
+  .sev { display: inline-flex; align-items: center; gap: .375rem; font-size: .875rem; font-weight: 600; color: var(--sev); }
+  label.to-author { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; cursor: pointer; }
+  label.to-author input { width: 1.25rem; height: 1.25rem; }
+  .solid { color: var(--muted-foreground); }
+
+  .gate { font-weight: 600; }
+  .options { display: grid; gap: .5rem; }
+  .options .btn { justify-content: flex-start; text-align: left; white-space: normal; height: auto; padding-block: .625rem; }
+  .options .btn[data-result="right"] { border-color: var(--forest); background: var(--forest-soft); }
+  .options .btn[data-result="wrong"] { border-color: var(--destructive); }
+  .answer[hidden], #ready[hidden], #missed[hidden] { display: none; }
+  .score { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+  #ready > section, #missed > section { color: var(--foreground); }
+  #ready { border-color: var(--forest); background: var(--forest-soft); }
+</style>
+</head>
+<body>
+<!-- Icons: Lucide, lucide-static@1.70.0, ISC license. To add one, copy the inner elements of
+     https://cdn.jsdelivr.net/npm/lucide-static@1.70.0/icons/<name>.svg into a new <symbol id="i-<name>">. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></symbol>
+  <symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></symbol>
+  <symbol id="i-octagon-x" viewBox="0 0 24 24"><path d="m15 9-6 6" /><path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z" /><path d="m9 9 6 6" /></symbol>
+  <symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></symbol>
+  <symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+  <symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></symbol>
+  <symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol>
+  <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="m16 9-5.5 5.5L8 12" /></symbol>
+</svg>
+<main>
+  <!-- Replace every example text. Keep the structure, the classes and the script. -->
+  <header>
+    <span class="badge brand">review</span>
+    <h1>Cache unchanged saves</h1>
+    <p class="lead">Branch <code>feat/save-cache</code> against <code>main</code> · 4 files · +86 −12</p>
+    <nav class="toc" aria-label="Sections">
+      <a class="btn" data-variant="outline" href="#background">Background</a>
+      <a class="btn" data-variant="outline" href="#intuition">Intuition</a>
+      <a class="btn" data-variant="outline" href="#code">Code</a>
+      <a class="btn" data-variant="outline" href="#leans-on">Leans on</a>
+      <a class="btn" data-variant="outline" href="#deviations">Deviations</a>
+      <a class="btn" data-variant="outline" href="#eval-pack">Eval pack</a>
+      <a class="btn" data-variant="outline" href="#findings">Findings</a>
+      <a class="btn" data-variant="outline" href="#quiz">Quiz</a>
+    </nav>
+  </header>
+
+  <section id="background">
+    <h2>Background</h2>
+    <details class="deep">
+      <summary>Deep background (skip if you know the save path)</summary>
+      <p>Every editor save goes through <code>DocumentService.save</code>, which writes the content to storage and emits a <code>saved</code> event. Three listeners react to that event: search indexing, the activity feed and the autosave timer.</p>
+    </details>
+    <p>Autosave fires every five seconds, also when nothing changed. That produces about 700 identical writes per document and hour.</p>
+  </section>
+
+  <section id="intuition">
+    <h2>Intuition</h2>
+    <!-- One before/after view of the path a request or the data takes. Always with example data. -->
+    <div class="compare">
+      <div>
+        <h3>Before</h3>
+        <div class="flow">
+          <span class="box">autosave<small>"Hello"</small></span><span class="arrow"><svg class="icon"><use href="#i-arrow-right"/></svg></span>
+          <span class="box">save()<small>write</small></span><span class="arrow"><svg class="icon"><use href="#i-arrow-right"/></svg></span>
+          <span class="box">storage<small>v42</small></span>
+        </div>
+      </div>
+      <div>
+        <h3>After</h3>
+        <div class="flow">
+          <span class="box">autosave<small>"Hello"</small></span><span class="arrow"><svg class="icon"><use href="#i-arrow-right"/></svg></span>
+          <span class="box new">hash check<small>same as v42</small></span><span class="arrow"><svg class="icon"><use href="#i-arrow-right"/></svg></span>
+          <span class="box">cached result<small>v42</small></span>
+        </div>
+      </div>
+    </div>
+    <p>The save path now compares a hash of the content with the last saved hash and returns early when they match.</p>
+    <div class="alert concept">
+      <svg class="icon"><use href="#i-lightbulb"/></svg>
+      <h3>Content hash</h3>
+      <section><p>A short fingerprint of the content. Equal content gives an equal hash, so the comparison costs one string compare instead of a storage read.</p></section>
+    </div>
+  </section>
+
+  <section id="code">
+    <h2>Code</h2>
+    <p>The shape first: one new step in the save path, one new step after the write.</p>
+    <!-- Shape diff: wrap added lines in <span class="add">, removed lines in <span class="del">. Keep the leading + and -. Escape < and >. -->
+<pre> on(save)
+<span class="del">-  write content</span>
+<span class="add">+  if hash(content) == lastHash</span>
+<span class="add">+    return cached result</span>
+<span class="add">+  write new content</span>
+<span class="add">+  lastHash = hash(content)</span></pre>
+    <p>The hash lives on the service instance (<code>src/documents/service.ts:41</code>), so every document tab keeps its own value.</p>
+  </section>
+
+  <section id="leans-on">
+    <h2>Leans on</h2>
+    <!-- One row per existing behaviour the change depends on. If it leans on nothing, replace the table with one sentence. -->
+    <table class="table leans">
+      <thead><tr><th>What</th><th>Where</th><th>Breaks if it changes</th></tr></thead>
+      <tbody>
+        <tr><td>One service instance per tab</td><td><code>src/app/di.ts:12</code></td><td>A shared instance mixes the hashes of two documents.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Only when an implementation-notes file or the PR description records deviations. Else delete this section and its TOC link. -->
+  <section id="deviations">
+    <h2>Deviations from the plan</h2>
+    <ul>
+      <li><strong>SHA-1 instead of xxhash.</strong> The agent kept the standard library. <em>Keep.</em></li>
+    </ul>
+  </section>
+
+  <!-- Only when an eval pack exists. Else delete this section and its TOC link. -->
+  <section id="eval-pack">
+    <h2>Eval pack</h2>
+    <table class="table leans">
+      <thead><tr><th>ID</th><th>Evidence in the PR</th><th>Verified</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>AC-1</td><td>Screen recording: autosave of an unchanged document</td><td>Ran <code>skips identical saves</code>, green</td><td>Delivered</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="findings">
+    <h2>Findings</h2>
+    <div class="stack">
+      <!-- One .card per finding. data-severity: blocker, should-fix, nit, question or pre-existing, with the matching icon from the CSS comment. Nits and pre-existing get no checkbox. -->
+      <article class="card" data-severity="blocker">
+        <header>
+          <span class="sev"><svg class="icon"><use href="#i-octagon-x"/></svg>Blocker</span>
+          <h3>The saved event no longer fires on a cache hit</h3>
+        </header>
+        <section class="stack">
+          <p><code>src/documents/service.ts:58</code> returns before <code>emit('saved')</code>. The autosave timer listens to that event to reset itself.</p>
+          <p class="muted">Why it matters: after the first unchanged save the timer never resets, and the status bar shows "unsaved" forever.</p>
+          <label class="to-author"><input type="checkbox" data-reply="src/documents/service.ts:58 — The early return skips emit('saved'), so the autosave timer never resets after a cache hit.">To the author</label>
+        </section>
+      </article>
+      <article class="card" data-severity="question">
+        <header>
+          <span class="sev"><svg class="icon"><use href="#i-circle-help"/></svg>Question</span>
+          <h3>Should a title change count as a change?</h3>
+        </header>
+        <section class="stack">
+          <p>The hash covers the body only (<code>src/documents/service.ts:44</code>).</p>
+          <label class="to-author"><input type="checkbox" data-reply="src/documents/service.ts:44 — The hash covers the body only. Is a title-only change meant to skip the write?">To the author</label>
+        </section>
+      </article>
+    </div>
+    <p class="solid">Checked and solid: error handling around the write, the existing save tests.</p>
+    <article class="card">
+      <header><h3>Reply to the author</h3></header>
+      <section><pre id="reply">Tick findings above to build the reply.</pre></section>
+      <footer><button class="btn" data-variant="outline" id="copy-reply"><svg class="icon"><use href="#i-copy"/></svg>Copy reply</button></footer>
+    </article>
+  </section>
+
+  <section id="quiz">
+    <h2>Quiz — the merge gate</h2>
+    <p class="gate">Pass all questions before you merge. The gate blocks nothing; it shows you what you understood.</p>
+    <div class="stack">
+      <!-- One .card per question, 5 or 6. Mark the right option with data-right. Link the answering section. -->
+      <article class="card quiz">
+        <header><h3>Autosave fires with unchanged content. What must still happen?</h3></header>
+        <section class="options">
+          <button class="btn" data-variant="outline">A storage write</button>
+          <button class="btn" data-variant="outline" data-right>The saved event, so the timer resets</button>
+          <button class="btn" data-variant="outline">A new hash computation of the last version</button>
+        </section>
+        <footer class="answer" hidden><p>The timer listens to the saved event. See the Blocker in <a href="#findings">Findings</a>.</p></footer>
+      </article>
+    </div>
+    <div class="score">
+      <p><strong id="score">0</strong> of <span id="total">0</span> right</p>
+      <button class="btn" data-variant="ghost" id="reset"><svg class="icon"><use href="#i-rotate-ccw"/></svg>Reset quiz</button>
+    </div>
+    <div class="alert" id="missed" hidden>
+      <svg class="icon"><use href="#i-book-open"/></svg>
+      <h3>Read again</h3>
+      <section><ul id="missed-list"></ul></section>
+    </div>
+    <div class="alert" id="ready" hidden>
+      <svg class="icon"><use href="#i-circle-check"/></svg>
+      <h3>Ready to merge</h3>
+      <section><ul>
+        <li>CI: green on the last push</li>
+        <li>Migrations: none</li>
+        <li>Open questions: title-only changes</li>
+        <li>Follow-up: none</li>
+      </ul></section>
+    </div>
+  </section>
+</main>
+<script>
+  // Reply builder: checked findings become one comment.
+  const reply = document.getElementById('reply');
+  const replyBoxes = [...document.querySelectorAll('[data-reply]')];
+  const placeholder = reply.textContent;
+  const buildReply = () => {
+    const items = replyBoxes.filter(b => b.checked).map(b => '- ' + b.dataset.reply);
+    reply.textContent = items.length ? items.join('\n') : placeholder;
+  };
+  replyBoxes.forEach(b => b.addEventListener('change', buildReply));
+  document.getElementById('copy-reply').addEventListener('click', async e => {
+    await navigator.clipboard.writeText(reply.textContent);
+    const use = e.currentTarget.querySelector('use'); use.setAttribute('href', '#i-check');
+    setTimeout(() => use.setAttribute('href', '#i-copy'), 1500);
+  });
+
+  // Quiz: one answer per question, running score, missed sections, ready checklist.
+  const quizzes = [...document.querySelectorAll('.quiz')];
+  document.getElementById('total').textContent = quizzes.length;
+  const update = () => {
+    const done = quizzes.filter(q => q.dataset.picked);
+    const right = done.filter(q => q.dataset.picked === 'right');
+    document.getElementById('score').textContent = right.length;
+    const missed = done.filter(q => q.dataset.picked === 'wrong');
+    const list = document.getElementById('missed-list');
+    list.innerHTML = '';
+    missed.forEach(q => q.querySelectorAll('.answer a').forEach(a => {
+      const li = document.createElement('li'); li.appendChild(a.cloneNode(true)); list.appendChild(li);
+    }));
+    document.getElementById('missed').hidden = !missed.length;
+    document.getElementById('ready').hidden = right.length !== quizzes.length;
+  };
+  quizzes.forEach(q => q.querySelectorAll('.options .btn').forEach(opt => opt.addEventListener('click', () => {
+    if (q.dataset.picked) return;
+    q.dataset.picked = opt.hasAttribute('data-right') ? 'right' : 'wrong';
+    opt.dataset.result = q.dataset.picked;
+    q.querySelector('[data-right]').dataset.result = 'right';
+    q.querySelector('.answer').hidden = false;
+    update();
+  })));
+  document.getElementById('reset').addEventListener('click', () => {
+    quizzes.forEach(q => {
+      delete q.dataset.picked;
+      q.querySelectorAll('[data-result]').forEach(b => delete b.dataset.result);
+      q.querySelector('.answer').hidden = true;
+    });
+    update();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+/* theme: bauhaus-flat
+   fonts: https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap
+   icons: lucide 2
+   signature: square shapes without shadows, a red circle in front of each label */
+:root {
+  --paper: #f5f1e8; --ink: #1a1a1a;
+  --ochre: #f2c12e; --sage: #3a7d5c; --terracotta: #d7372f; --dusty: #2f5d9a; --grey: #bdb8ad;
+  --display: "Jost", "Futura", system-ui, sans-serif; --display-vs: normal; --display-weight: 700; --display-tracking: -.01em;
+  --round: "Jost", "Futura", system-ui, sans-serif;
+  --serif: "Jost", "Futura", system-ui, sans-serif;
+  --r-btn: 0; --r-card: 0; --r-pic: 0; --r-note: 0; --r-hot: 50%;
+  --bw: 0px; --bc: var(--line);
+  --shadow-pic: none; --shadow-card: none; --shadow-btn: none;
+  --btn-bg: var(--terracotta); --btn-fg: #fff;
+  --hot-bg: var(--dusty); --hot-fg: #fff; --hot-ring: var(--paper);
+  --tilt: 0deg;
+}
+.label::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .5em; vertical-align: -.1em; border-radius: 50%; background: var(--terracotta); }

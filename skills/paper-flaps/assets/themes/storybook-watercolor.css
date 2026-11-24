@@ -1,0 +1,19 @@
+/* theme: storybook-watercolor
+   fonts: https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,700,100&family=Nunito:wght@500;700;800&display=swap
+   icons: phosphor duotone
+   signature: paper slips that tilt, soft watercolor shadows */
+:root {
+  --paper: #fbf6ec; --ink: #2f2a24;
+  --ochre: #d9a441; --sage: #8fa98a; --terracotta: #c8664b; --dusty: #7d97b3; --grey: #b9b0a3;
+  --display: "Fraunces", "Iowan Old Style", Georgia, serif; --display-vs: "SOFT" 100; --display-weight: 700; --display-tracking: -.02em;
+  --round: "Nunito", ui-rounded, system-ui, sans-serif;
+  --serif: "Iowan Old Style", "Palatino", Georgia, serif;
+  --r-btn: 24px; --r-card: 18px; --r-pic: 20px; --r-note: 4px 4px 4px 18px; --r-hot: 50%;
+  --bw: 0px; --bc: var(--line);
+  --shadow-pic: 0 1px 0 var(--line), 0 20px 44px -28px rgba(40,30,10,.5);
+  --shadow-card: 0 1px 0 var(--line), 0 18px 34px -24px rgba(40,30,10,.55);
+  --shadow-btn: none;
+  --btn-bg: var(--ink); --btn-fg: var(--paper);
+  --hot-bg: var(--terracotta); --hot-fg: #fff; --hot-ring: #fff;
+  --tilt: -.6deg;
+}

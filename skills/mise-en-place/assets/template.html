@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blindspot pass: Add an SSO provider</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.1.0/dist/basecoat-nova.cdn.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/700.css">
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const setTheme = () => document.documentElement.classList.toggle('dark', dark.matches);
+  setTheme(); dark.addEventListener('change', setTheme);
+</script>
+<style>
+  /* Primary stays black (white in dark mode). Accents: copper and forest. */
+  :root { --copper: #a65f2d; --copper-soft: oklch(0.96 0.02 65); --forest: #2a3b2a; --forest-soft: oklch(0.96 0.02 145); }
+  html.dark { --copper: #c47a3f; --copper-soft: oklch(0.25 0.05 55 / 0.3); --forest: #98b3a1; --forest-soft: oklch(0.25 0.04 145 / 0.3); }
+  body { font-size: 16px; line-height: 1.6; background: var(--background); color: var(--foreground); }
+  main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 5rem; }
+  main > section { margin-top: 3.5rem; scroll-margin-top: 1rem; }
+  h1 { font-size: 2rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; margin: .75rem 0; }
+  h2 { font-size: 1.375rem; font-weight: 600; letter-spacing: -0.01em; margin-bottom: .75rem; }
+  h3 { font-size: 1.0625rem; font-weight: 600; }
+  .lead { color: var(--muted-foreground); }
+  .btn { min-height: 44px; }
+  .stack { display: grid; gap: 1rem; }
+  .muted { color: var(--muted-foreground); }
+  main a:not(.btn) { text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px; }
+  .badge.brand { background: var(--forest-soft); color: var(--forest); }
+  .card, .alert, .alert > section { font-size: 1rem; }
+  code { font: 0.9375em var(--font-mono); }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .icon { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .more { margin-top: 1rem; }
+  .counts { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+
+  /* One accent per kind: landmine red, convention copper, concept forest, attempt neutral. */
+  [data-kind="landmine"] { --kind: var(--destructive); }
+  [data-kind="convention"] { --kind: var(--copper); }
+  [data-kind="concept"] { --kind: var(--forest); }
+  [data-kind="attempt"] { --kind: var(--muted-foreground); }
+  .card[data-kind] { border-left: 4px solid var(--kind); }
+  .kind { display: inline-flex; align-items: center; gap: .375rem; font-size: .875rem; font-weight: 600; color: var(--kind); }
+  .counts .kind { border: 1px solid var(--border); border-radius: 999px; padding: .25rem .75rem; color: var(--foreground); }
+  .counts .kind .icon { color: var(--kind); }
+
+  dl.parts { display: grid; gap: .75rem; margin: 0; }
+  dl.parts dt { font-size: .875rem; font-weight: 600; color: var(--muted-foreground); }
+  dl.parts dd { margin: 0; }
+  blockquote { margin: 0; padding: .75rem 1rem; border-left: 3px solid var(--copper); background: var(--copper-soft); border-radius: 0 var(--radius) var(--radius) 0; }
+
+  ul.checked { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+  ul.checked li { display: grid; grid-template-columns: 1.5rem 1fr; }
+  ul.checked .icon { color: var(--forest); margin-top: .3em; }
+
+  pre { white-space: pre-wrap; margin: 0; padding: 1rem; border-radius: var(--radius); background: var(--muted);
+    font: 0.9375rem/1.55 var(--font-mono); }
+</style>
+</head>
+<body>
+<!-- Icons: Lucide, lucide-static@1.70.0, ISC license. To add one, copy the inner elements of
+     https://cdn.jsdelivr.net/npm/lucide-static@1.70.0/icons/<name>.svg into a new <symbol id="i-<name>">. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-bomb" viewBox="0 0 24 24"><circle cx="11" cy="13" r="9" /><path d="M14.35 4.65 16.3 2.7a2.41 2.41 0 0 1 3.4 0l1.6 1.6a2.4 2.4 0 0 1 0 3.4l-1.95 1.95" /><path d="m22 2-1.5 1.5" /></symbol>
+  <symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /><path d="M15 8h-5" /><path d="M19 17V5a2 2 0 0 0-2-2H4" /><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol>
+  <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z" /></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></symbol>
+  <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="m16 9-5.5 5.5L8 12" /></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+</svg>
+<main>
+  <!-- Replace every example text. Keep the structure, the classes and the script. -->
+  <header>
+    <span class="badge brand">blindspot pass</span>
+    <h1>Add an SSO provider</h1>
+    <p class="lead">Area: <code>src/auth/providers/</code></p>
+  </header>
+
+  <section id="asked">
+    <h2>What you asked for</h2>
+    <p>Add Okta as a fourth SSO provider. The naive reading: copy the Google provider, change the endpoints, register the class.</p>
+  </section>
+
+  <section id="situation">
+    <h2>What you are walking into</h2>
+    <p>The provider interface hides an account-linking model, and one of the three providers bypasses the session middleware. An Okta attempt was reverted eight months ago.</p>
+    <!-- One .kind pill per kind that has at least one card. Icons: landmine bomb, convention scroll-text, concept puzzle, attempt history. -->
+    <p class="counts">
+      <span class="kind" data-kind="landmine"><svg class="icon"><use href="#i-bomb"/></svg>2 landmines</span>
+      <span class="kind" data-kind="convention"><svg class="icon"><use href="#i-scroll-text"/></svg>1 unwritten convention</span>
+      <span class="kind" data-kind="concept"><svg class="icon"><use href="#i-puzzle"/></svg>1 missing concept</span>
+      <span class="kind" data-kind="attempt"><svg class="icon"><use href="#i-history"/></svg>1 earlier attempt</span>
+    </p>
+  </section>
+
+  <section id="blindspots">
+    <h2>The blindspots</h2>
+    <div class="stack">
+      <!-- One .card per blindspot, at most seven, most expensive first. data-kind: landmine, convention, concept or attempt. -->
+      <article class="card" data-kind="landmine">
+        <header>
+          <span class="kind"><svg class="icon"><use href="#i-bomb"/></svg>Landmine</span>
+          <h3>The Google provider skips the session middleware</h3>
+        </header>
+        <section>
+          <dl class="parts">
+            <dt>Evidence</dt>
+            <dd><code>src/auth/providers/google.ts:88</code>, commit <code>4e1c9a2</code></dd>
+            <dt>Why it bites this task</dt>
+            <dd>If you copy Google, Okta logins never set the CSRF cookie and every form post after login fails.</dd>
+            <dt>Prompt fix</dt>
+            <dd><blockquote>Base the Okta provider on the GitHub provider, not on Google. Google bypasses the session middleware on purpose.</blockquote></dd>
+          </dl>
+        </section>
+        <footer><button class="btn" data-variant="outline" data-copy><svg class="icon"><use href="#i-copy"/></svg>Copy prompt fix</button></footer>
+      </article>
+      <article class="card" data-kind="attempt">
+        <header>
+          <span class="kind"><svg class="icon"><use href="#i-history"/></svg>Earlier attempt</span>
+          <h3>Okta was added once and reverted</h3>
+        </header>
+        <section>
+          <dl class="parts">
+            <dt>Evidence</dt>
+            <dd>Revert <code>b7d03f1</code>: "tokens expire before the refresh job runs"</dd>
+            <dt>Why it bites this task</dt>
+            <dd>Okta access tokens live five minutes. The refresh job runs every ten.</dd>
+            <dt>Prompt fix</dt>
+            <dd><blockquote>Refresh Okta tokens on demand before each API call. The refresh job is too slow for Okta.</blockquote></dd>
+          </dl>
+        </section>
+        <footer><button class="btn" data-variant="outline" data-copy><svg class="icon"><use href="#i-copy"/></svg>Copy prompt fix</button></footer>
+      </article>
+    </div>
+    <!-- Only when more than seven blindspots were found: one line each. -->
+    <p class="muted more">Also found: the provider list in the admin UI is hard-coded (<code>admin/sso.tsx:14</code>).</p>
+  </section>
+
+  <section id="checked">
+    <h2>Checked and unremarkable</h2>
+    <ul class="checked">
+      <!-- One <li> per area that holds no blindspot. -->
+      <li><svg class="icon"><use href="#i-circle-check"/></svg><span>Logout flow: shared by all providers, no provider-specific branch.</span></li>
+      <li><svg class="icon"><use href="#i-circle-check"/></svg><span>Tests: every provider has the same contract test; a new provider gets it by registration.</span></li>
+    </ul>
+  </section>
+
+  <section id="prompt">
+    <h2>The better prompt</h2>
+    <article class="card">
+      <section><pre>Add Okta as an SSO provider in src/auth/providers/.
+
+1. Base the Okta provider on the GitHub provider, not on Google. Google bypasses the session middleware on purpose.
+2. Refresh Okta tokens on demand before each API call. The refresh job is too slow for Okta.
+
+Work order: provider class, registration in the three places, token refresh, contract test.
+Stop and show me the plan after the token refresh design before writing code.</pre></section>
+      <footer><button class="btn" data-variant="primary" data-copy><svg class="icon"><use href="#i-copy"/></svg>Copy prompt</button></footer>
+    </article>
+  </section>
+</main>
+<script>
+  document.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', async () => {
+    const source = btn.closest('.card').querySelector('blockquote, pre');
+    await navigator.clipboard.writeText(source.textContent.trim());
+    const use = btn.querySelector('use'); use.setAttribute('href', '#i-check');
+    setTimeout(() => use.setAttribute('href', '#i-copy'), 1500);
+  }));
+</script>
+</body>
+</html>

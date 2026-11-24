@@ -1,0 +1,20 @@
+/* theme: ink-drawing
+   fonts: https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@500;600;700&display=swap
+   icons: lucide 1.25
+   signature: hairlines instead of shadows, outlined buttons, one red accent */
+:root {
+  --paper: #fcfbf8; --ink: #151515;
+  --ochre: #8a8a8a; --sage: #5f6b5f; --terracotta: #b03a2e; --dusty: #5a6878; --grey: #c9c6c0;
+  --display: "EB Garamond", Georgia, serif; --display-vs: normal; --display-weight: 600; --display-tracking: -.01em;
+  --round: "IBM Plex Sans", system-ui, sans-serif;
+  --serif: "EB Garamond", Georgia, serif;
+  --r-btn: 2px; --r-card: 2px; --r-pic: 2px; --r-note: 2px; --r-hot: 50%;
+  --bw: 1px; --bc: var(--ink);
+  --shadow-pic: none; --shadow-card: none; --shadow-btn: none;
+  --btn-bg: transparent; --btn-fg: var(--ink);
+  --hot-bg: var(--terracotta); --hot-fg: #fff; --hot-ring: var(--paper);
+  --tilt: 0deg;
+  --l1: var(--ink); --l2: var(--dusty); --l3: var(--terracotta);
+}
+body { font-size: 19px; }
+.pic-frame img, .scrolly .stage { outline: 1px solid var(--ink); outline-offset: 6px; }

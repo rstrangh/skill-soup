@@ -1,0 +1,3 @@
+interface:
+  display_name: "Talk Like TED Auditor"
+  short_description: "Audits slide decks using Gallo's nine TED principles"

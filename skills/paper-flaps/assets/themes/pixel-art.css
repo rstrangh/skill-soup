@@ -1,0 +1,20 @@
+/* theme: pixel-art
+   fonts: https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap
+   icons: phosphor bold
+   signature: square corners, hard pixel shadows, pixel font only for titles */
+:root {
+  --paper: #f2ead7; --ink: #22223b;
+  --ochre: #f4b942; --sage: #6a994e; --terracotta: #d1495b; --dusty: #4a6fa5; --grey: #a8a29e;
+  --display: "Press Start 2P", ui-monospace, monospace; --display-vs: normal; --display-weight: 400; --display-tracking: 0;
+  --round: "Space Mono", ui-monospace, monospace;
+  --serif: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --r-btn: 0; --r-card: 0; --r-pic: 0; --r-note: 0; --r-hot: 0;
+  --bw: 3px; --bc: var(--ink);
+  --shadow-pic: 6px 6px 0 var(--ink); --shadow-card: 4px 4px 0 var(--ink); --shadow-btn: 3px 3px 0 var(--ink);
+  --btn-bg: var(--dusty); --btn-fg: #fff;
+  --hot-bg: var(--terracotta); --hot-fg: #fff; --hot-ring: var(--ink);
+  --tilt: 0deg;
+}
+h1 { font-size: clamp(1.25rem, 4.2vw, 1.9rem); line-height: 1.45; }
+h2 { font-size: clamp(1.05rem, 3.4vw, 1.45rem); line-height: 1.5; }
+.pic-frame img, .scrolly .stage { border: 3px solid var(--ink); }

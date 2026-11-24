@@ -1,0 +1,19 @@
+/* theme: gouache-poster
+   fonts: https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap
+   icons: phosphor fill
+   signature: flat color blocks without shadows, a thick bar under each title */
+:root {
+  --paper: #f4efe6; --ink: #262626;
+  --ochre: #e0a526; --sage: #2f6f6a; --terracotta: #e2733d; --dusty: #6f8fa6; --grey: #b5ada0;
+  --display: "Bricolage Grotesque", system-ui, sans-serif; --display-vs: normal; --display-weight: 800; --display-tracking: -.025em;
+  --round: "Bricolage Grotesque", system-ui, sans-serif;
+  --serif: "Source Serif 4", Georgia, serif;
+  --r-btn: 12px; --r-card: 14px; --r-pic: 8px; --r-note: 12px; --r-hot: 50%;
+  --bw: 0px; --bc: var(--line);
+  --shadow-pic: none; --shadow-card: none; --shadow-btn: none;
+  --btn-bg: var(--sage); --btn-fg: #fff;
+  --hot-bg: var(--terracotta); --hot-fg: #fff; --hot-ring: var(--paper);
+  --tilt: 0deg;
+}
+h1::after, h2::after { content: ""; display: block; width: 64px; height: 8px; margin-top: var(--s3); border-radius: 4px; background: var(--ochre); }
+.note, .scrolly .step > *, details.flap > summary { background: color-mix(in srgb, var(--ochre) 14%, var(--paper)); }

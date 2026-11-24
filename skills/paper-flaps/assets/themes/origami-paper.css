@@ -1,0 +1,20 @@
+/* theme: origami-paper
+   fonts: https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap
+   icons: lucide 1.75
+   signature: crisp paper corners with a hard fold shadow, a folded two-tone triangle in front of each label */
+:root {
+  --paper: #f3ece0; --ink: #2d2a27;
+  --ochre: #e0a43a; --sage: #6f8f6a; --terracotta: #d9472b; --dusty: #34508f; --grey: #c4a582;
+  --display: "Shippori Mincho B1", "Hiragino Mincho ProN", Georgia, serif; --display-vs: normal; --display-weight: 800; --display-tracking: -.01em;
+  --round: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, sans-serif;
+  --serif: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, sans-serif;
+  --r-btn: 3px; --r-card: 3px; --r-pic: 3px; --r-note: 3px; --r-hot: 50%;
+  --bw: 0px; --bc: var(--line);
+  --shadow-pic: 0 1px 0 var(--line), 6px 8px 0 -2px rgba(60,40,20,.12), 0 22px 40px -26px rgba(60,40,20,.5);
+  --shadow-card: 0 1px 0 var(--line), 4px 5px 0 -2px rgba(60,40,20,.10);
+  --shadow-btn: inset 0 -3px 0 rgba(0,0,0,.22);
+  --btn-bg: var(--dusty); --btn-fg: #fff;
+  --hot-bg: var(--terracotta); --hot-fg: #fff; --hot-ring: #fff;
+  --tilt: 0deg;
+}
+.label::before { content: ""; display: inline-block; width: .85em; height: .75em; margin-right: .5em; vertical-align: -.05em; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(90deg, var(--terracotta) 50%, color-mix(in srgb, var(--terracotta) 72%, #000) 50%); }

@@ -1,0 +1,20 @@
+/* theme: clay-diorama
+   fonts: https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;500;700&display=swap
+   icons: phosphor fill
+   signature: puffy molded buttons with a light top edge and a pressed bottom edge */
+:root {
+  --paper: #fbf4ea; --ink: #3a3330;
+  --ochre: #e0b13e; --sage: #8cbf9f; --terracotta: #e8785e; --dusty: #8fb0d6; --grey: #c8bfb4;
+  --display: "Fredoka", ui-rounded, system-ui, sans-serif; --display-vs: normal; --display-weight: 600; --display-tracking: -.01em;
+  --round: "Fredoka", ui-rounded, system-ui, sans-serif;
+  --serif: "Nunito", ui-rounded, system-ui, sans-serif;
+  --r-btn: 999px; --r-card: 26px; --r-pic: 28px; --r-note: 22px; --r-hot: 50%;
+  --bw: 0px; --bc: var(--line);
+  --shadow-pic: 0 10px 0 -4px var(--line), 0 24px 40px -26px rgba(60,40,20,.55);
+  --shadow-card: 0 8px 0 -3px var(--line), 0 18px 30px -20px rgba(60,40,20,.5);
+  --shadow-btn: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -4px 0 rgba(0,0,0,.25);
+  --btn-bg: var(--ink); --btn-fg: var(--paper);
+  --hot-bg: color-mix(in srgb, var(--terracotta) 72%, var(--ink)); --hot-fg: #fff; --hot-ring: #fff;
+  --tilt: 0deg;
+}
+.hotspot { box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -4px 0 rgba(0,0,0,.25), 0 6px 14px -6px rgba(0,0,0,.45); }

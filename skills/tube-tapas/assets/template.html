@@ -1,0 +1,63 @@
+<!doctype html>
+<html$lang>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title</title>
+<!-- talk_digest.ts fills the placeholders that start with a dollar sign. Write a literal dollar sign twice. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.1.0/dist/basecoat-nova.cdn.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/700.css">
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const setTheme = () => document.documentElement.classList.toggle('dark', dark.matches);
+  setTheme(); dark.addEventListener('change', setTheme);
+</script>
+<style>
+  /* Primary stays black (white in dark mode). Accents: copper and forest. */
+  :root { --copper: #a65f2d; --copper-soft: oklch(0.96 0.02 65); --forest: #2a3b2a; --forest-soft: oklch(0.96 0.02 145); }
+  html.dark { --copper: #c47a3f; --copper-soft: oklch(0.25 0.05 55 / 0.3); --forest: #98b3a1; --forest-soft: oklch(0.25 0.04 145 / 0.3); }
+  body { font-size: 16px; line-height: 1.6; background: var(--background); color: var(--foreground); }
+  header, main { max-width: 1400px; margin: 0 auto; padding-inline: 1rem; }
+  header { padding-top: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  h1 { font-size: 2rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; margin: .75rem 0 .25rem; }
+  .badge.brand { background: var(--forest-soft); color: var(--forest); }
+  .meta { color: var(--muted-foreground); }
+  a { text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px; }
+  main { padding-bottom: 4rem; }
+  main > section { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 2rem; padding: 2rem 0;
+    border-bottom: 1px solid var(--border); scroll-margin-top: 1rem; }
+  figure { margin: 0; }
+  .stick { position: sticky; top: 1rem; }
+  img { width: 100%; height: auto; display: block; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); }
+  figcaption { margin-top: .5rem; font-size: .875rem; font-variant-numeric: tabular-nums; }
+  figcaption a { display: inline-flex; align-items: center; min-height: 44px; }
+  .text p { margin: 0 0 1em; }
+  .empty { color: var(--muted-foreground); font-style: italic; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .icon { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  figcaption a, .meta a { gap: .25rem; }
+  .meta a { display: inline-flex; align-items: center; }
+  @media (max-width: 800px) { main > section { grid-template-columns: 1fr; gap: 1rem; } .stick { position: static; } }
+</style>
+</head>
+<body>
+<!-- Icons: Lucide, lucide-static@1.70.0, ISC license. To add one, copy the inner elements of
+     https://cdn.jsdelivr.net/npm/lucide-static@1.70.0/icons/<name>.svg into a new <symbol id="i-<name>">. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></symbol>
+</svg>
+<header>
+  <span class="badge brand">talk digest</span>
+  <h1>$title</h1>
+  <p class="meta">$meta</p>
+</header>
+<main>$rows</main>
+</body>
+</html>

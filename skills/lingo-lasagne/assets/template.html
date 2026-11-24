@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teach me: Color grading</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.1.0/dist/basecoat-nova.cdn.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/700.css">
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const setTheme = () => document.documentElement.classList.toggle('dark', dark.matches);
+  setTheme(); dark.addEventListener('change', setTheme);
+</script>
+<style>
+  /* Primary stays black (white in dark mode). Accents: copper and forest. */
+  :root { --copper: #a65f2d; --copper-soft: oklch(0.96 0.02 65); --forest: #2a3b2a; --forest-soft: oklch(0.96 0.02 145); }
+  html.dark { --copper: #c47a3f; --copper-soft: oklch(0.25 0.05 55 / 0.3); --forest: #98b3a1; --forest-soft: oklch(0.25 0.04 145 / 0.3); }
+  body { font-size: 16px; line-height: 1.6; background: var(--background); color: var(--foreground); }
+  main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 5rem; }
+  main > section { margin-top: 3.5rem; scroll-margin-top: 1rem; }
+  h1 { font-size: 2rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; margin: .75rem 0; }
+  h2 { font-size: 1.375rem; font-weight: 600; letter-spacing: -0.01em; margin-bottom: .25rem; }
+  h3 { font-size: 1.0625rem; font-weight: 600; }
+  .lead, .intro { color: var(--muted-foreground); }
+  .intro { margin-bottom: 1.25rem; }
+  .btn { min-height: 44px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+  .stack { display: grid; gap: 1rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+  .muted { color: var(--muted-foreground); }
+  main a:not(.btn) { text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px; }
+  .badge.brand { background: var(--forest-soft); color: var(--forest); }
+  .card, .alert, .alert > section { font-size: 1rem; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .icon { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  ol.model { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; counter-reset: step; }
+  ol.model li { display: grid; grid-template-columns: 2.25rem 1fr; gap: .75rem; counter-increment: step; }
+  ol.model li::before { content: counter(step); display: grid; place-items: center; width: 2.25rem; height: 2.25rem;
+    border-radius: 999px; background: var(--primary); color: var(--primary-foreground); font-weight: 600; }
+
+  .rung { display: flex; gap: 3px; }
+  .rung span { width: 14px; height: 6px; border-radius: 3px; background: var(--muted); }
+  .rung span.on { background: var(--copper); }
+  blockquote { margin: 0; padding: .75rem 1rem; border-left: 3px solid var(--copper); background: var(--copper-soft); border-radius: 0 var(--radius) var(--radius) 0; }
+
+  .pair { display: grid; gap: .75rem; }
+  .vague { color: var(--muted-foreground); text-decoration: line-through; text-decoration-color: var(--destructive); }
+  pre { white-space: pre-wrap; margin: 0; padding: 1rem; border-radius: var(--radius); background: var(--muted);
+    font: 0.9375rem/1.55 var(--font-mono); }
+
+  .options { display: grid; gap: .5rem; }
+  .options .btn { justify-content: flex-start; text-align: left; white-space: normal; height: auto; padding-block: .625rem; }
+  .options .btn[data-result="right"] { border-color: var(--forest); background: var(--forest-soft); }
+  .options .btn[data-result="wrong"] { border-color: var(--destructive); }
+  .answer[hidden] { display: none; }
+</style>
+</head>
+<body>
+<!-- Icons: Lucide, lucide-static@1.70.0, ISC license. To add one, copy the inner elements of
+     https://cdn.jsdelivr.net/npm/lucide-static@1.70.0/icons/<name>.svg into a new <symbol id="i-<name>">. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+</svg>
+<main>
+  <!-- Replace every example text. Keep the structure, the classes and the script. -->
+  <header>
+    <span class="badge brand">lingo-lasagne</span>
+    <h1>Color grading</h1>
+    <p class="lead">Your case: <strong>the launch video looks flat and a bit green, and you want it to look "nicer".</strong></p>
+    <nav class="toc" aria-label="Sections">
+      <a class="btn" data-variant="outline" href="#model">Mental model</a>
+      <a class="btn" data-variant="outline" href="#ladder">Vocabulary</a>
+      <a class="btn" data-variant="outline" href="#confusions">Confusions</a>
+      <a class="btn" data-variant="outline" href="#prompts">Better prompts</a>
+      <a class="btn" data-variant="outline" href="#check">Self-check</a>
+    </nav>
+  </header>
+
+  <section id="model">
+    <h2>Mental model</h2>
+    <p class="intro">The order a colorist works in. Each step depends on the one before.</p>
+    <ol class="model">
+      <!-- One <li> per step, 3 to 5 steps. -->
+      <li><div><h3>Normalize</h3><p>Turn the flat log footage into normal contrast, so every later step starts from a known base.</p></div></li>
+      <li><div><h3>Correct</h3><p>Fix exposure and white balance per shot, so the green cast disappears before any look is added.</p></div></li>
+      <li><div><h3>Match</h3><p>Make all shots of one scene look like one camera, so cuts do not jump.</p></div></li>
+      <li><div><h3>Look</h3><p>Add the creative style last, on top of matched shots, so it stays consistent.</p></div></li>
+    </ol>
+  </section>
+
+  <section id="ladder">
+    <h2>Vocabulary ladder</h2>
+    <p class="intro">From the first word a beginner meets to the word that marks a professional.</p>
+    <div class="stack">
+      <!-- One .card per term, 8 to 12 terms. Light up as many .rung spans as the rank of the term, out of the total. -->
+      <article class="card" id="term-white-balance">
+        <header>
+          <h3>White balance</h3>
+          <p class="meta"><span class="rung" aria-label="Term 1 of 3"><span class="on"></span><span></span><span></span></span><span class="muted">also: color temperature</span></p>
+        </header>
+        <section class="stack">
+          <p>The setting that makes white objects look white. A wrong white balance tints the whole picture.</p>
+          <p class="muted">Measured in Kelvin (K), plus a tint value on the green–magenta axis.</p>
+          <blockquote>"Pull the tint toward magenta until the shirt in shot 3 is neutral."</blockquote>
+        </section>
+      </article>
+      <article class="card" id="term-log">
+        <header>
+          <h3>Log footage</h3>
+          <p class="meta"><span class="rung" aria-label="Term 2 of 3"><span class="on"></span><span class="on"></span><span></span></span><span class="muted">also: flat profile</span></p>
+        </header>
+        <section class="stack">
+          <p>Footage recorded with low contrast on purpose, to keep detail in shadows and highlights for the grade.</p>
+          <blockquote>"Apply the camera's conversion LUT before you touch the contrast."</blockquote>
+        </section>
+      </article>
+      <article class="card" id="term-scopes">
+        <header>
+          <h3>Vectorscope</h3>
+          <p class="meta"><span class="rung" aria-label="Term 3 of 3"><span class="on"></span><span class="on"></span><span class="on"></span></span></p>
+        </header>
+        <section class="stack">
+          <p>A chart of the hue and saturation of every pixel. It shows a color cast your eyes have already got used to.</p>
+          <blockquote>"Check the vectorscope: the skin tones must sit on the skin-tone line."</blockquote>
+        </section>
+      </article>
+    </div>
+  </section>
+
+  <section id="confusions">
+    <h2>Classic confusions</h2>
+    <p class="intro">The mix-ups that would make your next prompt wrong.</p>
+    <div class="stack">
+      <!-- One .alert per confusion, 3 to 5. -->
+      <div class="alert">
+        <svg class="icon"><use href="#i-triangle-alert"/></svg>
+        <h3>Correction is not a look</h3>
+        <section><p>A film-look LUT on uncorrected shots bakes the green cast in. You recognise it when every shot keeps a different tint under the same look.</p></section>
+      </div>
+      <div class="alert">
+        <svg class="icon"><use href="#i-triangle-alert"/></svg>
+        <h3>Your eyes are not a meter</h3>
+        <section><p>After ten minutes the eye accepts a color cast as neutral. You recognise it when the scopes and your impression disagree.</p></section>
+      </div>
+    </div>
+  </section>
+
+  <section id="prompts">
+    <h2>Better prompts</h2>
+    <p class="intro">Your request, rewritten with the new words. Start with the first one.</p>
+    <div class="stack">
+      <!-- One .card per prompt, 3 prompts, from a small first step to the full task. -->
+      <article class="card">
+        <header><h3>1 · Correct one shot</h3></header>
+        <section class="pair">
+          <p class="vague">Make the video look nicer.</p>
+          <pre>Normalize shot 3 with the camera's conversion LUT, then neutralize the white balance so the white shirt reads neutral on the vectorscope. Do not add a look yet.</pre>
+        </section>
+        <footer><button class="btn" data-variant="outline" data-copy><svg class="icon"><use href="#i-copy"/></svg>Copy prompt</button></footer>
+      </article>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Self-check</h2>
+    <p class="intro">Three questions on your case. Pick an answer to see why.</p>
+    <div class="stack">
+      <!-- One .card per question, 3 questions. Mark the right option with data-right. -->
+      <article class="card quiz">
+        <header><h3>The video still looks green after the film-look LUT. What comes first?</h3></header>
+        <section class="options">
+          <button class="btn" data-variant="outline">A stronger look</button>
+          <button class="btn" data-variant="outline" data-right>White balance correction per shot</button>
+          <button class="btn" data-variant="outline">More saturation</button>
+        </section>
+        <footer class="answer" hidden><p>Correction comes before the look. See <a href="#term-white-balance">White balance</a> and step 2 of the <a href="#model">mental model</a>.</p></footer>
+      </article>
+    </div>
+  </section>
+</main>
+<script>
+  document.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(btn.closest('.card').querySelector('pre').textContent);
+    const use = btn.querySelector('use'); use.setAttribute('href', '#i-check');
+    setTimeout(() => use.setAttribute('href', '#i-copy'), 1500);
+  }));
+  document.querySelectorAll('.quiz').forEach(q => q.querySelectorAll('.options .btn').forEach(opt => opt.addEventListener('click', () => {
+    opt.dataset.result = opt.hasAttribute('data-right') ? 'right' : 'wrong';
+    q.querySelector('[data-right]').dataset.result = 'right';
+    q.querySelector('.answer').hidden = false;
+  })));
+</script>
+</body>
+</html>

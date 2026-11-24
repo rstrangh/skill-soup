@@ -1,0 +1,9 @@
+{
+  "name": "skill-soup",
+  "description": "Agent skills for Claude Code and Codex: explainers, reviews, workflows",
+  "author": {
+    "name": "Roman Stranghöner"
+  },
+  "repository": "https://github.com/rstrangh/skill-soup",
+  "license": "MIT"
+}

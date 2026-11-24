@@ -1,0 +1,14 @@
+{
+  "name": "skill-soup",
+  "owner": {
+    "name": "Roman Stranghöner"
+  },
+  "description": "Agent skills for Claude Code and Codex: explainers, reviews, workflows",
+  "plugins": [
+    {
+      "name": "skill-soup",
+      "source": "./",
+      "description": "Agent skills for Claude Code and Codex: explainers, reviews, workflows"
+    }
+  ]
+}

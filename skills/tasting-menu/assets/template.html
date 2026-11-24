@@ -1,0 +1,356 @@
+<!doctype html>
+<!-- output-language --><!-- English and German: the page labels live in LABELS, graph.json picks one with "lang". -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tasting-menu</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.1.0/dist/basecoat-nova.cdn.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drawflow@0.0.60/dist/drawflow.min.css" integrity="sha384-IFh+Q6zh+LRcTjqVmAKetdGY59dT485vtvWT5DAKQy8iv5+fYWHXisHP7mFKcFqV" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/drawflow@0.0.60/dist/drawflow.min.js" integrity="sha384-JsnM4f1X8b5e9VbQCj6Bt6840HQNDYVKohzbXJnqOetMno8i6cmKNLVkyK3snqSw" crossorigin="anonymous"></script>
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const setTheme = () => document.documentElement.classList.toggle('dark', dark.matches);
+  setTheme(); dark.addEventListener('change', setTheme);
+</script>
+<style>
+/* Primary stays black (white in dark mode). Accents: copper and forest. */
+:root { --copper: #a65f2d; --copper-soft: oklch(0.96 0.02 65); --forest: #2a3b2a; --forest-soft: oklch(0.96 0.02 145); }
+html.dark { --copper: #c47a3f; --copper-soft: oklch(0.25 0.05 55 / 0.3); --forest: #98b3a1; --forest-soft: oklch(0.25 0.04 145 / 0.3); }
+html, body { height: 100%; margin: 0; }
+body { font-size: 16px; line-height: 1.5; background: var(--background); color: var(--foreground); overflow: hidden; }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.icon { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn { min-height: 44px; }
+
+/* Canvas */
+#canvas { position: fixed; inset: 0;
+  background-color: var(--background);
+  background-image: radial-gradient(color-mix(in srgb, var(--muted-foreground) 35%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px; }
+.drawflow .drawflow-node { background: var(--card); color: var(--card-foreground); border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px); width: 340px; padding: 0; display: block;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 4px 16px rgb(0 0 0 / .05); }
+.drawflow .drawflow-node.selected { background: var(--card); border-color: var(--foreground); }
+/* Basecoat also styles .input (form field), and Drawflow positions every svg absolutely: reset both. */
+.drawflow .drawflow-node .input, .drawflow .drawflow-node .output { all: unset; box-sizing: border-box; position: absolute; top: 18px;
+  width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--muted-foreground); background: var(--card); pointer-events: none; }
+.drawflow .drawflow-node svg.icon { position: static; z-index: auto; overflow: hidden !important; }
+.drawflow .drawflow-node .input { left: -7px; }
+.drawflow .drawflow-node .output { right: -7px; }
+.drawflow .connection .main-path { stroke: color-mix(in srgb, var(--muted-foreground) 70%, transparent); stroke-width: 2px; pointer-events: none; }
+.drawflow-delete { display: none !important; }
+
+/* Node content */
+.node-head { display: flex; align-items: center; gap: .5rem; padding: .625rem .875rem; border-bottom: 1px solid var(--border);
+  font-size: .875rem; font-weight: 600; }
+.node-head .kind { color: var(--muted-foreground); font-weight: 500; margin-left: auto; font-size: .8125rem; }
+.node-head .icon { color: var(--copper); }
+.node[data-type="text"] .node-head .icon { color: var(--forest); }
+.node-body { padding: .75rem .875rem .875rem; display: grid; gap: .625rem; }
+.node textarea { font: inherit; font-size: 1rem; line-height: 1.45; width: 100%; resize: vertical; min-height: 5.5rem; cursor: text; }
+.node[data-type="style"] textarea, .node[data-type="prompt"] textarea { height: 13rem; font-size: .9375rem; }
+.node textarea.changed { border-color: var(--copper); box-shadow: 0 0 0 1px var(--copper); }
+.who { font-size: .8125rem; color: var(--muted-foreground); margin: 0; }
+.who.mine { color: var(--forest); }
+.pic { display: block; width: 100%; aspect-ratio: var(--aspect, 16 / 9); object-fit: cover; border-radius: var(--radius);
+  background: var(--muted); cursor: zoom-in; border: 0; padding: 0; }
+.pic img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); display: block; }
+.pending { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .375rem; cursor: default;
+  color: var(--muted-foreground); font-size: .875rem; text-align: center; padding: 1rem; }
+.pending .icon { width: 1.5rem; height: 1.5rem; }
+.rate { display: flex; gap: .5rem; }
+.rate .btn { flex: 1; }
+.rate .btn[aria-pressed="true"][data-v="like"] { background: var(--forest); border-color: var(--forest); color: var(--background); }
+.rate .btn[aria-pressed="true"][data-v="dislike"] { background: var(--destructive); border-color: var(--destructive); color: var(--background); }
+.drawflow-node.disliked .pic { opacity: .35; filter: grayscale(1); }
+.drawflow .drawflow-node.liked { border-color: var(--forest); box-shadow: 0 0 0 2px var(--forest-soft); }
+.drawflow-node.fresh .node-head { background: var(--copper-soft); border-radius: calc(var(--radius) + 3px) calc(var(--radius) + 3px) 0 0; }
+
+/* Chrome */
+.bar { position: fixed; top: 12px; left: 12px; right: 12px; display: flex; gap: .5rem; align-items: center; pointer-events: none; z-index: 10; }
+.bar > * { pointer-events: auto; }
+.bar h1 { font-size: 1rem; font-weight: 600; margin: 0; padding: .5rem .875rem; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); min-height: 44px; display: flex; align-items: center; gap: .5rem; }
+.bar .spacer { flex: 1; }
+.zoom { display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2px; }
+.zoom .btn { min-width: 44px; }
+.panel { position: fixed; left: 12px; bottom: 12px; width: min(360px, calc(100vw - 24px)); z-index: 10; }
+.panel header { padding-bottom: 0; }
+.panel h2 { font-size: 1rem; font-weight: 600; margin: 0; }
+.panel textarea { font: inherit; font-size: 1rem; width: 100%; min-height: 4.5rem; resize: vertical; }
+.panel .row { display: flex; gap: .5rem; }
+.panel .row .btn:first-child { flex: 1; }
+.stat { font-size: .875rem; color: var(--muted-foreground); margin: 0; font-variant-numeric: tabular-nums; }
+dialog.view { max-width: min(1200px, 96vw); width: 96vw; padding: 0; border: 1px solid var(--border); border-radius: calc(var(--radius) + 4px);
+  background: var(--card); color: var(--card-foreground); }
+dialog.view::backdrop { background: rgb(0 0 0 / .7); }
+dialog.view img { display: block; width: 100%; max-height: 70vh; object-fit: contain; background: #000; }
+dialog.view .meta { padding: 1rem 1.25rem; display: grid; gap: .5rem; }
+dialog.view pre { white-space: pre-wrap; font-family: var(--font-mono); font-size: .875rem; margin: 0; max-height: 22vh; overflow: auto; }
+dialog.view .close { position: absolute; top: 8px; right: 8px; }
+noscript, .fallback { display: block; max-width: 45rem; margin: 5rem auto; padding: 1rem; }
+@media (max-width: 640px) {
+  .bar h1 { flex: 1; min-width: 0; }
+  .bar h1 span.t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .panel { left: 12px; right: 12px; width: auto; }
+  .panel textarea { min-height: 2.75rem; }
+}
+</style>
+</head>
+<body>
+<!-- Icons: Lucide, lucide-static@1.70.0, ISC license. To add one, copy the inner elements of
+     https://cdn.jsdelivr.net/npm/lucide-static@1.70.0/icons/<name>.svg into a new <symbol id="i-<name>">. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol>
+  <symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></symbol>
+  <symbol id="i-thumbs-down" viewBox="0 0 24 24"><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" /><path d="M17 14V2" /></symbol>
+  <symbol id="i-thumbs-up" viewBox="0 0 24 24"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" /><path d="M7 10v12" /></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M12 4v16" /><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" /><path d="M9 20h6" /></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></symbol>
+  <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" /><line x1="11" x2="11" y1="8" y2="14" /><line x1="8" x2="14" y1="11" y2="11" /></symbol>
+  <symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" /><line x1="8" x2="14" y1="11" y2="11" /></symbol>
+</svg>
+
+<div id="canvas"></div>
+
+<div class="bar">
+  <h1><span class="t" id="title"></span><span class="badge" data-variant="outline" id="round"></span></h1>
+  <span class="spacer"></span>
+  <div class="zoom">
+    <button class="btn" data-variant="ghost" id="zoom-out" data-label="zoom_out"><svg class="icon"><use href="#i-zoom-out"/></svg></button>
+    <button class="btn" data-variant="ghost" id="zoom-in" data-label="zoom_in"><svg class="icon"><use href="#i-zoom-in"/></svg></button>
+  </div>
+</div>
+
+<section class="card panel" aria-labelledby="panel-title">
+  <header><h2 id="panel-title"></h2></header>
+  <section style="display:grid;gap:.625rem">
+    <textarea class="textarea" id="comment" ></textarea>
+    <p class="stat" id="stat"></p>
+    <div class="row">
+      <button class="btn" id="copy"><svg class="icon"><use href="#i-copy"/></svg> <span id="copy-label"></span></button>
+      <button class="btn" data-variant="outline" id="download" data-label="download"><svg class="icon"><use href="#i-download"/></svg></button>
+    </div>
+  </section>
+</section>
+
+<dialog class="view" id="view">
+  <button class="btn close" data-variant="secondary" data-label="close" onclick="this.closest('dialog').close()"><svg class="icon"><use href="#i-x"/></svg></button>
+  <img id="view-img" alt="">
+  <div class="meta"><strong id="view-title"></strong><pre id="view-prompt"></pre></div>
+</dialog>
+
+<noscript>This page needs JavaScript for the graph. The data is in graph.json.</noscript>
+
+<script id="data" type="application/json">/*__DATA__*/</script>
+<script>
+const G = JSON.parse(document.getElementById('data').textContent);
+const byId = Object.fromEntries(G.nodes.map(n => [n.id, n]));
+// Interface texts. graph.json sets "lang"; English is the default.
+const LABELS = {
+  en: { reference: 'Reference', text: 'Input', style: 'Style', prompt: 'Prompt', image: 'Image', round: 'Round',
+    finish: 'Finish round', comment: 'General instruction for the next round (optional)', copy: 'Copy JSON',
+    download: 'Download JSON', close: 'Close', zoom_in: 'Zoom in', zoom_out: 'Zoom out', show: 'show large',
+    pending: 'Not generated yet', like: 'Like', dislike: 'Drop', liked: 'Liked', disliked: 'Dropped',
+    note: 'What should change? Becomes a variant.', mine: 'Your input', agent: 'From the agent · editable',
+    edits: 'text edits', ratings: 'ratings', variants: 'variant requests', file: 'round',
+    no_lib: 'Drawflow did not load (offline?). The data is in graph.json.' },
+  de: { reference: 'Referenz', text: 'Eingabe', style: 'Stil', prompt: 'Prompt', image: 'Bild', round: 'Runde',
+    finish: 'Runde abschließen', comment: 'Allgemeine Anweisung für die nächste Runde (optional)', copy: 'JSON kopieren',
+    download: 'JSON herunterladen', close: 'Schließen', zoom_in: 'Vergrößern', zoom_out: 'Verkleinern', show: 'groß anzeigen',
+    pending: 'Noch nicht generiert', like: 'Gefällt', dislike: 'Weg', liked: 'Gefällt', disliked: 'Verworfen',
+    note: 'Was soll anders werden? Wird eine Variante.', mine: 'Deine Eingabe', agent: 'Vom Agenten · editierbar',
+    edits: 'Textänderungen', ratings: 'Bewertungen', variants: 'Varianten-Wünsche', file: 'runde',
+    no_lib: 'Drawflow konnte nicht geladen werden (offline?). Die Daten stehen in graph.json.' },
+};
+const L = LABELS[G.lang] || LABELS.en;
+document.documentElement.lang = LABELS[G.lang] ? G.lang : 'en';
+const KIND = {
+  reference: ['image', L.reference], text: ['type', L.text], style: ['palette', L.style],
+  prompt: ['sparkles', L.prompt], image: ['image', L.image],
+};
+for (const el of document.querySelectorAll('[data-label]')) el.setAttribute('aria-label', L[el.getAttribute('data-label')]);
+document.getElementById('comment').placeholder = L.comment;
+document.getElementById('copy-label').textContent = L.copy;
+const STORE = 'tasting-menu:' + G.title + ':' + G.round;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const icon = n => `<svg class="icon"><use href="#i-${n}"/></svg>`;
+
+document.title = G.title + ' · tasting-menu';
+document.getElementById('title').textContent = G.title;
+document.getElementById('round').textContent = L.round + ' ' + G.round;
+document.getElementById('panel-title').textContent = L.finish;
+document.documentElement.style.setProperty('--aspect', (G.aspect || '16:9').replace(':', ' / '));
+
+if (typeof Drawflow === 'undefined') {
+  document.getElementById('canvas').innerHTML = '<p class="fallback">' + L.no_lib + '</p>';
+  throw new Error('Drawflow missing');
+}
+
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { saved = {}; }
+const state = { texts: saved.texts || {}, verdicts: saved.verdicts || {}, notes: saved.notes || {}, comment: saved.comment || '' };
+const persist = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch {} };
+
+function body(n) {
+  const fresh = n.round === G.round;
+  if (n.type === 'reference') {
+    return `<button class="pic" data-view="${esc(n.id)}" aria-label="${esc(n.title)}: ${L.show}"><img src="${esc(n.image)}" alt="${esc(n.title)}"></button>`;
+  }
+  if (n.type === 'image') {
+    const pic = n.pending
+      ? `<div class="pic pending">${icon('loader-circle')}<span>${L.pending}</span></div>`
+      : `<button class="pic" data-view="${esc(n.id)}" aria-label="${esc(n.title)}: ${L.show}"><img src="${esc(n.image)}" alt="${esc(n.title)}" loading="lazy"></button>`;
+    if (!fresh || n.pending) {
+      const v = n.verdict === 'like' ? L.liked : n.verdict === 'dislike' ? L.disliked : '';
+      return pic + (v || n.note ? `<p class="who">${esc([v, n.note].filter(Boolean).join(' · '))}</p>` : '');
+    }
+    return pic + `<div class="rate">
+        <button class="btn" data-variant="outline" data-rate="${esc(n.id)}" data-v="like" aria-pressed="false">${icon('thumbs-up')} ${L.like}</button>
+        <button class="btn" data-variant="outline" data-rate="${esc(n.id)}" data-v="dislike" aria-pressed="false">${icon('thumbs-down')} ${L.dislike}</button>
+      </div>
+      <textarea class="textarea" data-note="${esc(n.id)}" rows="2" placeholder="${L.note}"></textarea>`;
+  }
+  const mine = n.type === 'text';
+  const who = mine ? `<p class="who mine">${L.mine}</p>` : `<p class="who">${L.agent}</p>`;
+  return who + `<textarea class="textarea" data-text="${esc(n.id)}" placeholder="${esc(n.hint || '')}">${esc(n.text)}</textarea>`;
+}
+
+const editor = new Drawflow(document.getElementById('canvas'));
+editor.reroute = false;
+editor.zoom_min = 0.2;
+editor.start();
+const dfId = {};
+for (const n of G.nodes) {
+  const [ic, kind] = KIND[n.type];
+  const cls = n.round === G.round ? 'fresh' : '';
+  const html = `<div class="node" data-type="${n.type}" data-id="${esc(n.id)}">
+      <div class="node-head">${icon(ic)}<span>${esc(n.title)}</span><span class="kind">${kind} · R${n.round}</span></div>
+      <div class="node-body">${body(n)}</div></div>`;
+  const hasKids = G.nodes.some(m => (m.from || []).includes(n.id));
+  dfId[n.id] = editor.addNode(n.type, (n.from || []).length ? 1 : 0, hasKids ? 1 : 0, n.pos_x, n.pos_y, cls, {}, html);
+}
+for (const n of G.nodes) for (const p of n.from || []) editor.addConnection(dfId[p], dfId[n.id], 'output_1', 'input_1');
+// The agent owns structure. The human edits text and rates images, never deletes or rewires.
+editor.removeNodeId = () => {};
+editor.removeConnection = () => {};
+// Liked or disliked state lives on the outer Drawflow node so the border shows.
+const outer = id => document.getElementById('node-' + dfId[id]);
+for (const n of G.nodes) if (n.verdict) outer(n.id).classList.add(n.verdict === 'like' ? 'liked' : 'disliked');
+
+// Two-finger scroll pans, pinch (ctrl + wheel) zooms through Drawflow itself.
+const canvas = document.getElementById('canvas');
+canvas.addEventListener('wheel', e => {
+  if (e.ctrlKey || e.target.closest('textarea')) return;
+  e.preventDefault();
+  editor.canvas_x -= e.deltaX; editor.canvas_y -= e.deltaY;
+  editor.precanvas.style.transform = `translate(${editor.canvas_x}px, ${editor.canvas_y}px) scale(${editor.zoom})`;
+}, { passive: false });
+document.getElementById('zoom-in').onclick = () => editor.zoom_in();
+document.getElementById('zoom-out').onclick = () => editor.zoom_out();
+// Open on the newest round and its direct parents. If they do not fit at a readable zoom,
+// keep the right edge in view: the newest images sit there.
+function focusNewest() {
+  const fresh = G.nodes.filter(n => n.round === G.round);
+  const ids = new Set(fresh.flatMap(n => [n.id, ...(n.from || [])]));
+  const boxes = [...ids].map(id => outer(id)).filter(Boolean)
+    .map(el => ({ x: el.offsetLeft, y: el.offsetTop, r: el.offsetLeft + el.offsetWidth, b: el.offsetTop + el.offsetHeight }));
+  if (!boxes.length) return;
+  const bx = Math.min(...boxes.map(b => b.x)), by = Math.min(...boxes.map(b => b.y));
+  const bw = Math.max(...boxes.map(b => b.r)) - bx, bh = Math.max(...boxes.map(b => b.b)) - by;
+  const W = canvas.clientWidth, H = canvas.clientHeight, pad = 24, top = 72;
+  const z = Math.max(0.6, Math.min(1, (W - 2 * pad) / bw, (H - top - pad) / bh));
+  // Drawflow scales around the centre of the precanvas: screen = c + (p - c) * z + t.
+  const cx = editor.precanvas.clientWidth / 2, cy = editor.precanvas.clientHeight / 2;
+  const left = bw * z <= W - 2 * pad ? pad : W - pad - bw * z;
+  editor.zoom = editor.zoom_last_value = z;
+  editor.canvas_x = left - cx - (bx - cx) * z;
+  editor.canvas_y = top - cy - (by - cy) * z;
+  editor.precanvas.style.transform = `translate(${editor.canvas_x}px, ${editor.canvas_y}px) scale(${z})`;
+}
+addEventListener('load', focusNewest);
+
+// Inputs
+const textareas = [...document.querySelectorAll('[data-text]')];
+for (const t of textareas) {
+  if (t.dataset.text in state.texts) t.value = state.texts[t.dataset.text];
+  t.addEventListener('input', () => { state.texts[t.dataset.text] = t.value; persist(); update(); });
+}
+for (const t of document.querySelectorAll('[data-note]')) {
+  t.value = state.notes[t.dataset.note] || '';
+  t.addEventListener('input', () => { state.notes[t.dataset.note] = t.value; persist(); update(); });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-rate]');
+  if (b) {
+    const id = b.dataset.rate;
+    state.verdicts[id] = state.verdicts[id] === b.dataset.v ? undefined : b.dataset.v;
+    persist(); update(); return;
+  }
+  const v = e.target.closest('[data-view]');
+  if (v) {
+    const n = byId[v.dataset.view];
+    document.getElementById('view-img').src = n.image;
+    document.getElementById('view-img').alt = n.title;
+    document.getElementById('view-title').textContent = n.title;
+    document.getElementById('view-prompt').textContent = n.prompt_used || '';
+    document.getElementById('view').showModal();
+  }
+});
+const comment = document.getElementById('comment');
+comment.value = state.comment;
+comment.addEventListener('input', () => { state.comment = comment.value; persist(); update(); });
+
+function exportData() {
+  const edits = textareas.filter(t => t.value !== (byId[t.dataset.text].text || ''))
+    .map(t => ({ id: t.dataset.text, text: t.value }));
+  const ids = new Set([...Object.keys(state.verdicts), ...Object.keys(state.notes)]);
+  const verdicts = [...ids].map(id => ({ id, verdict: state.verdicts[id] || null, note: (state.notes[id] || '').trim() }))
+    .filter(v => v.verdict || v.note);
+  return { 'tasting-menu': G.title, round: G.round, edits, verdicts, comment: state.comment.trim() };
+}
+function update() {
+  for (const t of textareas) t.classList.toggle('changed', t.value !== (byId[t.dataset.text].text || ''));
+  for (const b of document.querySelectorAll('[data-rate]')) b.setAttribute('aria-pressed', state.verdicts[b.dataset.rate] === b.dataset.v);
+  for (const n of G.nodes.filter(n => n.type === 'image' && n.round === G.round && !n.pending)) {
+    outer(n.id).classList.toggle('liked', state.verdicts[n.id] === 'like');
+    outer(n.id).classList.toggle('disliked', state.verdicts[n.id] === 'dislike');
+  }
+  const d = exportData();
+  const notes = d.verdicts.filter(v => v.note).length;
+  document.getElementById('stat').textContent =
+    `${d.edits.length} ${L.edits} · ${d.verdicts.filter(v => v.verdict).length} ${L.ratings} · ${notes} ${L.variants}`;
+}
+update();
+
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); return; } catch {}
+  const t = Object.assign(document.createElement('textarea'), { value: s });
+  document.body.append(t); t.select(); document.execCommand('copy'); t.remove();
+}
+document.getElementById('copy').onclick = async e => {
+  const b = e.currentTarget;
+  await copyText(JSON.stringify(exportData(), null, 2));
+  b.querySelector('use').setAttribute('href', '#i-check');
+  setTimeout(() => b.querySelector('use').setAttribute('href', '#i-copy'), 1500);
+};
+document.getElementById('download').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(exportData(), null, 2)], { type: 'application/json' }));
+  a.download = `tasting-menu.${L.file}-${G.round}.json`;
+  a.click();
+};
+</script>
+</body>
+</html>

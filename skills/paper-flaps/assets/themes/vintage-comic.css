@@ -1,0 +1,21 @@
+/* theme: vintage-comic
+   fonts: https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap
+   icons: phosphor bold
+   signature: heavy outlines with a hard offset shadow, faint halftone dots on the paper */
+:root {
+  --paper: #f6eed8; --ink: #1d1d1d;
+  --ochre: #f2c230; --sage: #4f9a7a; --terracotta: #d63b2f; --dusty: #3f7cc0; --grey: #bdb39c;
+  --display: "Bangers", Impact, sans-serif; --display-vs: normal; --display-weight: 400; --display-tracking: .03em;
+  --round: "Comic Neue", "Comic Sans MS", system-ui, sans-serif;
+  --serif: "Literata", Georgia, serif;
+  --r-btn: 8px; --r-card: 8px; --r-pic: 4px; --r-note: 8px; --r-hot: 50%;
+  --bw: 3px; --bc: var(--ink);
+  --shadow-pic: 5px 5px 0 var(--ink); --shadow-card: 4px 4px 0 var(--ink); --shadow-btn: 3px 3px 0 var(--ink);
+  --btn-bg: var(--terracotta); --btn-fg: #fff;
+  --hot-bg: var(--ochre); --hot-fg: var(--ink); --hot-ring: var(--ink);
+  --tilt: -1deg;
+}
+body { background-image: radial-gradient(color-mix(in srgb, var(--grey) 45%, transparent) 1px, transparent 1.4px); background-size: 7px 7px; }
+h1, h2 { font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1; }
+h2 { font-size: clamp(1.9rem, 5.5vw, 2.6rem); }
+.pic-frame img, .scrolly .stage { border: 3px solid var(--ink); }

@@ -1,0 +1,146 @@
+<!doctype html>
+<!-- 3D starter for plate-it. Replace the example (a layer stack) and every text in the user's language. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which layer may call which?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.1.0/dist/basecoat-nova.cdn.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist@5.3.0/600.css">
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const setTheme = () => document.documentElement.classList.toggle('dark', dark.matches);
+  setTheme(); dark.addEventListener('change', setTheme);
+</script>
+<style>
+:root { --accent: #c2410c; --solid: #d6d3d1; --edge: #78716c; }
+html.dark { --accent: #fb923c; --solid: #44403c; --edge: #a8a29e; }
+body { background: var(--background); color: var(--foreground); font-size: 16px; line-height: 1.6; }
+main { max-width: 56rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; margin: 0 0 .25rem; }
+.lead { color: var(--muted-foreground); margin: 0 0 1rem; }
+.stage { position: relative; height: min(70vh, 520px); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--card); }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.label { position: absolute; transform: translate(-50%, -50%); font-size: .8125rem; font-weight: 600; padding: .125rem .5rem;
+  border-radius: 999px; background: var(--background); border: 1px solid var(--border); white-space: nowrap; pointer-events: none; }
+.label.accent { border-color: var(--accent); color: var(--accent); }
+.reset { position: absolute; right: .75rem; top: .75rem; }
+.caption { margin: .75rem 0 0; }
+.simplified, .source { color: var(--muted-foreground); font-size: .8125rem; margin: .25rem 0 0; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<main>
+  <h1>Which layer may call which?</h1>
+  <p class="lead">Each slab is one layer. Arrows point in the only allowed call direction.</p>
+  <div class="stage" id="stage">
+    <button class="btn reset" data-variant="outline" id="reset">Reset view</button>
+  </div>
+  <p class="caption">Look at the orange slab first: the domain layer calls nothing above it. Calls only go down.</p>
+  <p class="simplified">Simplified: one slab per layer, no cross-cutting concerns such as logging.</p>
+  <p class="source">Source: src/ui/, src/domain/, src/data/</p>
+</main>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// The example scene. Replace LAYERS and ARROWS with the facts of the idea.
+const LAYERS = [
+  { name: 'UI', y: 2.4 },
+  { name: 'Domain', y: 1.2, accent: true },
+  { name: 'Data', y: 0 },
+];
+const ARROWS = [[0, 1], [1, 2]]; // from layer index to layer index
+
+const stage = document.getElementById('stage');
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+const HOME = new THREE.Vector3(7, 5.5, 8);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+stage.prepend(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.2, 0);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x888888, 2.2));
+const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+sun.position.set(-4, 8, 6);
+scene.add(sun);
+
+const labels = [];
+function label(text, position, accent) {
+  const el = document.createElement('span');
+  el.className = 'label' + (accent ? ' accent' : '');
+  el.textContent = text;
+  stage.append(el);
+  labels.push({ el, position });
+}
+
+const materials = [];
+LAYERS.forEach(l => {
+  const mat = new THREE.MeshStandardMaterial({ flatShading: true });
+  mat.userData.accent = !!l.accent;
+  materials.push(mat);
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(4, 0.3, 3), mat);
+  slab.position.y = l.y;
+  scene.add(slab);
+  label(l.name, new THREE.Vector3(2.4, l.y, 1.6), l.accent);
+});
+// A solid arrow (shaft plus head) in front of the slabs, so it never hides inside them.
+const arrowMat = new THREE.MeshStandardMaterial({ flatShading: true });
+ARROWS.forEach(([a, b], i) => {
+  const top = LAYERS[a].y, bottom = LAYERS[b].y + 0.25, len = top - bottom;
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, len - 0.3), arrowMat);
+  shaft.position.set(-1.2 + i * 0.8, bottom + 0.3 + (len - 0.3) / 2, 1.9);
+  const head = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.3), arrowMat);
+  head.rotation.x = Math.PI;
+  head.position.set(shaft.position.x, bottom + 0.15, 1.9);
+  scene.add(shaft, head);
+});
+
+function paint() {
+  materials.forEach(m => m.color.set(css(m.userData.accent ? '--accent' : '--solid')));
+  arrowMat.color.set(css('--edge'));
+}
+paint();
+dark.addEventListener('change', () => requestAnimationFrame(paint));
+
+function resize() {
+  const { clientWidth: w, clientHeight: h } = stage;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+// Narrow screens get a camera further away, so the whole scene stays in view.
+function reset() {
+  const k = Math.max(1, 0.95 / camera.aspect);
+  camera.position.copy(HOME).sub(controls.target).multiplyScalar(k).add(controls.target);
+  controls.update();
+}
+document.getElementById('reset').onclick = reset;
+addEventListener('resize', () => { resize(); reset(); });
+resize(); reset();
+
+const v = new THREE.Vector3();
+renderer.setAnimationLoop(() => {
+  controls.update();
+  renderer.render(scene, camera);
+  const { clientWidth: w, clientHeight: h } = stage;
+  labels.forEach(({ el, position }) => {
+    v.copy(position).project(camera);
+    el.style.left = `${(v.x + 1) / 2 * w}px`;
+    el.style.top = `${(1 - v.y) / 2 * h}px`;
+  });
+});
+</script>
+</body>
+</html>
